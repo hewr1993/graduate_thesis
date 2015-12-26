@@ -46,8 +46,9 @@ if __name__ == "__main__":
             #0.5, (128, 0, 128), 1,
         #)
         sum_time += time.time() - st_time
-        print "\r%d-%d, %.2ffps" % (
+        print "\r%d-%d, %dx%d, %.2ffps" % (
             f_idx, anns[-1][0],
+            base_img.shape[0], base_img.shape[1],
             (f_idx - anns[0][0] + 1) / sum_time,
         ),
         sys.stdout.flush()
