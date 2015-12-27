@@ -14,7 +14,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument(dest="annotation_file", type=str)
 parser.add_argument("--width", default=400, type=int)
 parser.add_argument("--height", default=300, type=int)
+parser.add_argument("--auto-play", action="store_true")
 args = parser.parse_args()
+args.delay = 1 if args.auto_play else 0
+
 # get images directory
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 def get_images_directory(ann_fn):
@@ -53,5 +56,5 @@ if __name__ == "__main__":
         ),
         sys.stdout.flush()
         cv2.imshow('img', img)
-        if chr(cv2.waitKey(0) & 0xFF) == 'q':
+        if chr(cv2.waitKey(args.delay) & 0xFF) == 'q':
             exit()
