@@ -9,11 +9,11 @@ import glob
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
-def get_images_directory(ann_fn):
-    name = os.path.splitext(os.path.basename(ann_fn))[0]
+def get_images_directory(token):
+    name = os.path.splitext(os.path.basename(token))[0]
     i = name.find("_")
     return os.path.join(
-        os.path.dirname(ann_fn), "../../imagedata++",
+        os.path.dirname(token), "../../imagedata++",
         name[:i], name,
     )
 
