@@ -16,13 +16,13 @@ def get_instances():
         VOT2014.load_given_tokens(),
         VisualTracker.load_given_tokens(),
     ]
-    while True:
+    while len(gnrs) > 0:
         gnr_idx = random.randint(0, len(gnrs) - 1)
         try:
             gnr = gnrs[gnr_idx]
             yield gnr.next()
         except StopIteration:
-            del gnr[gnr_idx]
+            del gnrs[gnr_idx]
 
 if __name__ == "__main__":
     for token, data_stream in get_instances():
