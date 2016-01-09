@@ -7,7 +7,7 @@ import os
 import cv2
 import glob
 import random
-from token import get_tokens
+from token import get_tokens, get_images_directory
 
 
 def load_annotations(ann_fn):
@@ -25,15 +25,6 @@ def load_annotations(ann_fn):
             coords = [int(x + s * j) for x, s in zip(coords1, steps)]
             coords = zip(coords[::2], coords[1::2])
             yield (f_idx, coords)
-
-
-def get_images_directory(ann_fn):
-    name = os.path.splitext(os.path.basename(ann_fn))[0]
-    i = name.find("_")
-    return os.path.join(
-        os.path.dirname(ann_fn), "../../imagedata++",
-        name[:i], name,
-    )
 
 
 def load_given_tokens(tokens=None, randomize=True):
