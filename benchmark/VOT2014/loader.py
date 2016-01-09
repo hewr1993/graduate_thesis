@@ -10,23 +10,6 @@ import random
 from token import get_tokens, get_images_directory
 
 
-def load_annotations(ann_fn):
-    raw = []
-    for line in open(ann_fn):
-        arr = line.strip().split(" ")
-        idx = int(arr[0])
-        coords = map(float, arr[1:])
-        raw.append((idx, coords))
-    for i in xrange(1, len(raw)):
-        (f1_idx, coords1), (f2_idx, coords2) = raw[i - 1], raw[i]
-        steps = [(r - l) / (f2_idx - f1_idx) for l, r in zip(coords1, coords2)]
-        for j in xrange(f2_idx - f1_idx):
-            f_idx = f1_idx + j
-            coords = [int(x + s * j) for x, s in zip(coords1, steps)]
-            coords = zip(coords[::2], coords[1::2])
-            yield (f_idx, coords)
-
-
 def load_given_tokens(tokens=None, randomize=True):
     """
     @param tokens: None for loading all instances
@@ -38,8 +21,10 @@ def load_given_tokens(tokens=None, randomize=True):
         @return: [(img, (4 coordinates))]
         """
         img_dir = get_images_directory(token)
-        for f_idx, coords in load_annotations(token):
-            img = cv2.imread(os.path.join(img_dir, "%08d.jpg" % f_idx))
+        for idx, line in enumerate(open(token)):
+            img = cv2.imread(os.path.join(img_dir, "%08d.jpg" % (idx + 1)))
+            arr = map(int, map(float, line.strip().split(",")))
+            coords = zip(arr[::2], arr[1::2])
             coords = [(float(x) / img.shape[1], float(y) / img.shape[0])
                       for x, y in coords]
             yield (img, coords)
