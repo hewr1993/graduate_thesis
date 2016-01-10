@@ -24,6 +24,8 @@ def load_annotations(ann_fn):
             f_idx = f1_idx + j
             coords = [int(x + s * j) for x, s in zip(coords1, steps)]
             coords = zip(coords[::2], coords[1::2])
+            coords = reversed(coords)
+            coords = coords[2:] + coords[:2]
             yield (f_idx, coords)
 
 
