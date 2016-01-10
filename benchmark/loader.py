@@ -13,7 +13,7 @@ import VisualTracker
 def get_instances():
     gnrs = [
         ALOV.load_given_tokens(),
-        VOT2014.load_given_tokens(),
+        #VOT2014.load_given_tokens(),
         VisualTracker.load_given_tokens(),
     ]
     while len(gnrs) > 0:

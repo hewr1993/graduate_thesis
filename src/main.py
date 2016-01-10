@@ -25,7 +25,10 @@ def evaluate(tracker_type=NaiveTracker, EXTRA_CANDIDATES=0):
                 gt_results.append(gt_coords)
                 draw_polygon(img, gt_coords, color=(0, 255, 0))
                 draw_polygon(img, coords, color=(0, 0, 255))
-                for particle in tracker.particles[:EXTRA_CANDIDATES]:
+                for particle in sorted(
+                        tracker.particles, key=lambda x: x.weight,
+                        reverse=True,
+                )[:EXTRA_CANDIDATES]:
                     draw_polygon(img, particle.coords, color=(255, 0, 0))
                 cv2.imshow('img', img)
                 if chr(cv2.waitKey(0) & 0xFF) == 'q':

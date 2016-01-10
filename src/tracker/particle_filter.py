@@ -3,15 +3,18 @@
 # Created Time: Sun Jan 10 02:07:24 2016
 # Purpose: particle filter object tracker
 # Mail: hewr2010@gmail.com
+import cv2
+import numpy as np
 from base import Tracker
-from ..utils import ensure_relative_coordinates, noise
+from ..utils import ensure_relative_coordinates, ensure_absolute_coordinates,\
+    noise, histogram_similarity, normalize
 
 
 class Particle(object):
-    def __init__(self, coords, weight=0,
+    def __init__(self, coords, weight=1.,
                  _width=40, _height=40):
         """
-        @type coords: [(w, h), ...] for 4 corners
+        @type coords: [(w, h), ...] for 4 corners (relative coordinates)
         @param _width, _height: builtin image patch size
         """
         self.coords = coords
@@ -30,14 +33,23 @@ class Particle(object):
     def coords(self, value):
         self._coords = [(x, y) for x, y in value]  # deep copy
 
-    def add_noise(self, level=0.1):
+    def add_noise(self, level=0.02):
+        return
         ox, oy = noise(level), noise(level)
         self.coords = [(x + ox, y + oy) for x, y in self.coords]
+        coords = []
+        for x, y in self.coords:
+            x = max(min(x + ox, 1.), 0.)
+            y = max(min(y + oy, 1.), 0.)
+            coords.append((x, y))
+        self.coords = coords
 
     def patch_given_image(self, img):
         # TODO homography
-        return img[self.coords[0][1]:self.coords[-1][1],
-                   self.coords[0][0]:self.coords[-1][0]].copy()
+        coords = ensure_absolute_coordinates(self.coords, img.shape[:2])
+        patch_img = img[coords[0][1]:coords[-2][1],
+                        coords[0][0]:coords[-2][0]].copy()
+        return cv2.resize(patch_img, self._patch_shape[::-1])
 
 
 class ParticleFilterTracker(Tracker):
@@ -55,17 +67,26 @@ class ParticleFilterTracker(Tracker):
             particle.add_noise()
 
     def resample(self):
-        # TODO
-        pass
+        rng = np.random.RandomState()
+        norm_weights = normalize([p.weight for p in self.particles])
+        dist = rng.choice(len(self.particles), len(self.particles),
+                          p=norm_weights)
+        particles = []
+        for idx in dist:
+            p = self.particles[idx].copy()
+            p.add_noise()
+            particles.append(p)
+        self.particles = particles
 
     def evaluate(self, frame):
-        # TODO
         for particle in self.particles:
-            particle.weight += noise(0.1)  # TODO delete
-        self.particles.sort(key=lambda x: x.weight, reverse=True)
+            patch_img = particle.patch_given_image(frame)
+            particle.weight = histogram_similarity(
+                self.object_template, patch_img,
+            )
+        return max(self.particles, key=lambda x: x.weight).copy()
 
     def track(self, frame):
-        self.evaluate(frame)
-        ans_particle = self.particles[0].copy()
+        ans_particle = self.evaluate(frame)
         self.resample()
         return ans_particle.coords

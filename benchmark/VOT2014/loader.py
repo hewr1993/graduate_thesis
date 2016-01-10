@@ -25,6 +25,7 @@ def load_given_tokens(tokens=None, randomize=True):
             img = cv2.imread(os.path.join(img_dir, "%08d.jpg" % (idx + 1)))
             arr = map(int, map(float, line.strip().split(",")))
             coords = zip(arr[::2], arr[1::2])
+            coords = coords[1:] + coords[:1]
             coords = [(float(x) / img.shape[1], float(y) / img.shape[0])
                       for x, y in coords]
             yield (img, coords)
