@@ -3,6 +3,7 @@
 # Created Time: Sun Jan 10 02:07:24 2016
 # Purpose: particle filter object tracker
 # Mail: hewr2010@gmail.com
+import cv
 import cv2
 import numpy as np
 from base import Tracker
@@ -33,8 +34,8 @@ class Particle(object):
     def coords(self, value):
         self._coords = [(x, y) for x, y in value]  # deep copy
 
-    def add_noise(self, level=0.02):
-        return
+    def add_noise(self, level=0.1):
+        # FIXME: box in boundary
         ox, oy = noise(level), noise(level)
         self.coords = [(x + ox, y + oy) for x, y in self.coords]
         coords = []
@@ -47,13 +48,28 @@ class Particle(object):
     def patch_given_image(self, img):
         # TODO homography
         coords = ensure_absolute_coordinates(self.coords, img.shape[:2])
+        coords = [[x, y] for x, y in coords]  # for changable object
+        if coords[0][1] == coords[-2][1]:
+            if coords[0][1] == 0:
+                coords[-2][1] += 1
+            else:
+                coords[0][1] -= 1
+        if coords[0][0] == coords[-2][0]:
+            if coords[0][0] == 0:
+                coords[-2][0] += 1
+            else:
+                coords[0][0] -= 1
         patch_img = img[coords[0][1]:coords[-2][1],
                         coords[0][0]:coords[-2][0]].copy()
-        return cv2.resize(patch_img, self._patch_shape[::-1])
+        try:
+            return cv2.resize(patch_img, self._patch_shape[::-1])
+        except:
+            from IPython import embed; embed()
+            exit()
 
 
 class ParticleFilterTracker(Tracker):
-    def __init__(self, first_frame, bounding_box, nr_particle=10):
+    def __init__(self, first_frame, bounding_box, nr_particle=1000):
         """
         @param nr_particle: number of particles
         @type bounding_box: [(w, h), ...] for 4 corners
@@ -83,6 +99,8 @@ class ParticleFilterTracker(Tracker):
             patch_img = particle.patch_given_image(frame)
             particle.weight = histogram_similarity(
                 self.object_template, patch_img,
+                method=cv.CV_COMP_BHATTACHARYYA,
+                normalize=False,
             )
         return max(self.particles, key=lambda x: x.weight).copy()
 

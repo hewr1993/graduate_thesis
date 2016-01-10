@@ -11,9 +11,10 @@ from misc import list2nparray
 def normalize(v):
     v = list2nparray(v)
     _min, _max = min(v), max(v)
-    if _max - _min <= 1e-4:
+    v -= _min
+    if sum(v) == 0:
         return np.ones(v.shape, 'float32') / np.prod(v.shape)
-    return (v - _min) / (_max - _min)
+    return v / sum(v)
 
 
 def cosine_similarity(v0, v1):

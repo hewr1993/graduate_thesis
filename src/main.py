@@ -23,17 +23,18 @@ def evaluate(tracker_type=NaiveTracker, EXTRA_CANDIDATES=0):
                 coords = tracker.track(img)
                 results.append(coords)
                 gt_results.append(gt_coords)
-                draw_polygon(img, gt_coords, color=(0, 255, 0))
-                draw_polygon(img, coords, color=(0, 0, 255))
                 for particle in sorted(
                         tracker.particles, key=lambda x: x.weight,
                         reverse=True,
                 )[:EXTRA_CANDIDATES]:
+                    print particle.weight
                     draw_polygon(img, particle.coords, color=(255, 0, 0))
+                draw_polygon(img, gt_coords, color=(0, 255, 0))
+                draw_polygon(img, coords, color=(0, 0, 255))
                 cv2.imshow('img', img)
                 if chr(cv2.waitKey(0) & 0xFF) == 'q':
                     exit()
         # TODO evaluate results
 
 if __name__ == "__main__":
-    evaluate(ParticleFilterTracker)
+    evaluate(ParticleFilterTracker, EXTRA_CANDIDATES=1000)

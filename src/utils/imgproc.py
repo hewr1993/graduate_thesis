@@ -116,19 +116,24 @@ def ic01_to_i01c(arr, allow_2d=False):
     return np.swapaxes(np.rollaxis(arr, 1), 1, 2)
 
 
-def normalized_histogram(img):
+def histogram(img, normalize=True):
     if img.ndim == 2:  # grayscale
         hist = cv2.calcHist([img], [0], None, [256], [0., 255.0])
-        return cv2.normalize(hist, hist, 0, 1, cv2.NORM_MINMAX)
+        if normalize:
+            hist = cv2.normalize(hist, hist, 0, 1, cv2.NORM_MINMAX)
+        return hist
     else:
         hists = []
         for channel in xrange(img.shape[2]):
             hist = cv2.calcHist([img], [channel], None, [256], [0., 255.0])
-            hists.append(cv2.normalize(hist, hist, 0, 1, cv2.NORM_MINMAX))
+            if normalize:
+                hist = cv2.normalize(hist, hist, 0, 1, cv2.NORM_MINMAX)
+            hists.append(hist)
         return list2nparray(hists)
 
 
-def histogram_similarity(img0, img1, method=cv.CV_COMP_INTERSECT):
+def histogram_similarity(img0, img1, method=cv.CV_COMP_INTERSECT,
+                         normalize=True):
     """
     @type method:
         CV_COMP_CORREL Correlation
@@ -137,8 +142,8 @@ def histogram_similarity(img0, img1, method=cv.CV_COMP_INTERSECT):
         CV_COMP_BHATTACHARYYA Bhattacharyya distance
         CV_COMP_HELLINGER Synonym for CV_COMP_BHATTACHARYYA
     """
-    hist0 = normalized_histogram(img0)
-    hist1 = normalized_histogram(img1)
+    hist0 = histogram(img0, normalize=normalize)
+    hist1 = histogram(img1, normalize=normalize)
     return cv2.compareHist(hist0, hist1, method)
 
 
