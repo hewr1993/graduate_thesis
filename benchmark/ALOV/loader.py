@@ -10,6 +10,16 @@ import random
 from token import get_tokens, get_images_directory
 
 
+def ensure_coordinates_order(coords):
+    ul, br = min(coords), max(coords)
+    while coords[0] != ul:
+        coords = coords[1:] + coords[:1]
+    if coords[1][1] >= coords[-1][1]:
+        coords = list(reversed(coords))
+        coords = coords[-1:] + coords[:-1]
+    return coords
+
+
 def load_annotations(ann_fn):
     raw = []
     for line in open(ann_fn):
@@ -24,8 +34,7 @@ def load_annotations(ann_fn):
             f_idx = f1_idx + j
             coords = [int(x + s * j) for x, s in zip(coords1, steps)]
             coords = zip(coords[::2], coords[1::2])
-            coords = reversed(coords)
-            coords = coords[2:] + coords[:2]
+            coords = ensure_coordinates_order(coords)
             yield (f_idx, coords)
 
 
