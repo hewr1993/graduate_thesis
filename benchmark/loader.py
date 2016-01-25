@@ -9,13 +9,22 @@ import ALOV
 import VOT2014
 import VisualTracker
 
+DATASETS = [
+    ALOV,
+    #VOT2014,
+    VisualTracker,
+]
+
+
+def get_length_by_token(token):
+    for ds in DATASETS:
+        if ds.has_token(token):
+            return ds.get_length_by_token(token)
+    raise NotImplementedError
+
 
 def get_instances():
-    gnrs = [
-        ALOV.load_given_tokens(),
-        #VOT2014.load_given_tokens(),
-        VisualTracker.load_given_tokens(),
-    ]
+    gnrs = [ds.load_given_tokens() for ds in DATASETS]
     while len(gnrs) > 0:
         gnr_idx = random.randint(0, len(gnrs) - 1)
         try:

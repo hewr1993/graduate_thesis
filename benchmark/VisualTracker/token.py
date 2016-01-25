@@ -16,5 +16,10 @@ def get_images_directory(token):
 def get_tokens():
     return glob.glob(os.path.join(BASE_DIR, "*/groundtruth_rect.txt"))
 
+
+def has_token(token):
+    NAME = "groundtruth_rect.txt"
+    return token[-len(NAME):] == NAME
+
 if __name__ == "__main__":
     print get_tokens()

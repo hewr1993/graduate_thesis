@@ -21,5 +21,9 @@ def get_images_directory(token):
 def get_tokens():
     return glob.glob(os.path.join(BASE_DIR, "alov300++_rectangleAnnotation_full/*/*.ann"))
 
+
+def has_token(token):
+    return token[-4:] == ".ann"
+
 if __name__ == "__main__":
     print get_tokens()

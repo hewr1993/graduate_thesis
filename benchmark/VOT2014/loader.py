@@ -37,6 +37,10 @@ def load_given_tokens(tokens=None, randomize=True):
     for token in tokens:
         yield (token, get_data_stream(token))
 
+
+def get_length_by_token(token):
+    return len(list(open(token)))
+
 if __name__ == "__main__":
     for token, data_stream in load_given_tokens():
         print token
