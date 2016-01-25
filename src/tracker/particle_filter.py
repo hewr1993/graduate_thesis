@@ -35,14 +35,17 @@ class Particle(object):
         self._coords = [(x, y) for x, y in value]  # deep copy
 
     def add_noise(self, level=0.1):
-        # FIXME: box in boundary
-        ox, oy = noise(level), noise(level)
-        self.coords = [(x + ox, y + oy) for x, y in self.coords]
-        coords = []
-        for x, y in self.coords:
-            x = max(min(x + ox, 1.), 0.)
-            y = max(min(y + oy, 1.), 0.)
-            coords.append((x, y))
+        def in_boundary(coords):
+            for x, y in coords:
+                if x < 0. or x > 1. or y < 0. or y > 1.:
+                    return False
+            return True
+
+        while True:
+            ox, oy = noise(level), noise(level)
+            coords = [(x + ox, y + oy) for x, y in self.coords]
+            if in_boundary(coords):
+                break
         self.coords = coords
 
     def patch_given_image(self, img):

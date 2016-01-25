@@ -27,7 +27,6 @@ def evaluate(tracker_type=NaiveTracker, EXTRA_CANDIDATES=0):
                         tracker.particles, key=lambda x: x.weight,
                         reverse=True,
                 )[:EXTRA_CANDIDATES]:
-                    print particle.weight
                     draw_polygon(img, particle.coords, color=(255, 0, 0))
                 draw_polygon(img, gt_coords, color=(0, 255, 0))
                 draw_polygon(img, coords, color=(0, 0, 255))
