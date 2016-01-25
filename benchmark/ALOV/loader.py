@@ -64,7 +64,10 @@ def load_given_tokens(tokens=None, randomize=True):
 
 
 def get_length_by_token(token):
-    return len(list(open(token)))
+    lines = [l for l in open(token)]
+    begin = int(lines[0].split(" ")[0])
+    end = int(lines[-1].split(" ")[0])
+    return end - begin + 1
 
 if __name__ == "__main__":
     for token, data_stream in load_given_tokens():

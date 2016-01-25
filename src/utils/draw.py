@@ -30,3 +30,14 @@ def draw_polygon(img, coords,
     for i in xrange(len(coords)):
         p, q = coords[i], coords[(i + 1) % len(coords)]
         cv2.line(img, p, q, color, thickness)
+
+def fit_image_in_box(img, screen):
+    """scale in proportion to fit in screen
+    @param screen: (height, width)
+    """
+    ratio = min(float(screen[0]) / img.shape[0],
+                float(screen[1]) / img.shape[1])
+    if ratio < 1.:
+        img = cv2.resize(img, (int(img.shape[1] * ratio),
+                               int(img.shape[0] * ratio)))
+    return img
