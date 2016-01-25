@@ -34,6 +34,13 @@ class Particle(object):
     def coords(self, value):
         self._coords = [(x, y) for x, y in value]  # deep copy
 
+    def center(self):
+        xs, ys = zip(*self.coords)
+        x = sum(xs) / len(xs)
+        y = sum(ys) / len(ys)
+        return (x, y)
+
+    # FIXME faster implement
     def add_noise(self, level=0.1):
         def in_boundary(coords):
             for x, y in coords:
@@ -87,7 +94,7 @@ class ParticleFilterTracker(Tracker):
 
     def resample(self):
         rng = np.random.RandomState()
-        norm_weights = normalize([p.weight for p in self.particles])
+        norm_weights = normalize([1 - p.weight for p in self.particles])
         dist = rng.choice(len(self.particles), len(self.particles),
                           p=norm_weights)
         particles = []
@@ -103,9 +110,10 @@ class ParticleFilterTracker(Tracker):
             particle.weight = histogram_similarity(
                 self.object_template, patch_img,
                 method=cv.CV_COMP_BHATTACHARYYA,
-                normalize=False,
+                normalize=True,
             )
-        return max(self.particles, key=lambda x: x.weight).copy()
+        #return min(self.particles, key=lambda o: (o.coords[0][0] - self.bounding_box[0][0]) ** 2 + (o.coords[0][1] - self.bounding_box[0][1]) ** 2).copy()
+        return min(self.particles, key=lambda x: x.weight).copy()
 
     def track(self, frame):
         ans_particle = self.evaluate(frame)
