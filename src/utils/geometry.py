@@ -31,6 +31,16 @@ def draw_polygon(img, coords,
     cv2.polylines(img, np.array([coords], 'int64'), True, color, thickness)
 
 
+def get_rectangular_area(p, q):
+    return (q[0] - p[0]) * (q[1] - p[1])
+
+def get_overlap_area(coords0, coords1):
+    # FIXME only support rectangular at present
+    p = max(coords0[0], coords1[0])
+    q = min(coords0[2], coords1[2])
+    return get_rectangular_area(p, q)
+
+
 def fit_image_in_box(img, screen):
     """scale in proportion to fit in screen
     @param screen: (height, width)

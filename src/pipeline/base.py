@@ -8,7 +8,8 @@ import numpy as np
 import progressbar
 from abc import ABCMeta, abstractmethod
 from ..benchmark import get_instances, get_length_by_token
-from ..utils import draw_polygon, fit_image_in_box
+from ..utils import draw_polygon, fit_image_in_box, get_overlap_area,\
+    get_rectangular_area
 
 
 class PipelineBase(object):
@@ -33,7 +34,7 @@ class PipelineBase(object):
 
 
 class NormalPipeline(PipelineBase):
-    def run(self, data_provider=None, display_screen=(600, 800)):
+    def run(self, data_provider=None, display_screen=None):
         if data_provider is None:
             data_provider = get_instances()
         eval_results = []
@@ -45,7 +46,8 @@ class NormalPipeline(PipelineBase):
                 lambda x: x
             pred_results, gt_results = [], []
             for idx, (img, gt_coords) in pbar(enumerate(data_stream)):
-                img = fit_image_in_box(img, display_screen)
+                if display_screen is not None:
+                    img = fit_image_in_box(img, display_screen)
                 if idx == 0:
                     tracker = self.tracker_constructor(img, gt_coords)
                 else:
@@ -63,7 +65,20 @@ class NormalPipeline(PipelineBase):
         return eval_results
 
     def eval(self, pred_results, gt_results):
-        return 0  # TODO
+        overlap_areas = [get_overlap_area(p, g)
+                         for p, g in zip(pred_results, gt_results)]
+        normalized_areas = [
+            float(area) / get_rectangular_area(gt_coords[0], gt_coords[2])
+            for area, gt_coords in zip(overlap_areas, gt_results)
+        ]
+        X = np.linspace(0., 1., 100)  # 100 slices
+        Y = np.array([sum([
+            int(area >= threshold) for area in normalized_areas
+        ]) / float(len(normalized_areas)) for threshold in X])
+        return Y  # TODO
+        #import matplotlib.pyplot as plt
+        #plt.plot(X, Y)
+        #plt.show()
 
     def get_progressbar(self, maxval):
         widgets = [progressbar.Percentage(), " ", progressbar.Bar(), " ",

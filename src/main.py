@@ -10,4 +10,4 @@ if __name__ == "__main__":
     tracker_constructor = lambda *args, **kwargs:\
         HistogramParticleFilterTracker(*args, nr_particle=1000, **kwargs)
     worker = NormalPipeline(tracker_constructor, verbose=True)
-    worker.run()
+    worker.run(display_screen=(600, 800))
