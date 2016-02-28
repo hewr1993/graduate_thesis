@@ -75,10 +75,10 @@ class NormalPipeline(PipelineBase):
         Y = np.array([sum([
             int(area >= threshold) for area in normalized_areas
         ]) / float(len(normalized_areas)) for threshold in X])
+        import matplotlib.pyplot as plt
+        plt.plot(X, Y)
+        plt.show()
         return Y  # TODO
-        #import matplotlib.pyplot as plt
-        #plt.plot(X, Y)
-        #plt.show()
 
     def get_progressbar(self, maxval):
         widgets = [progressbar.Percentage(), " ", progressbar.Bar(), " ",
