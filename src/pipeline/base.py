@@ -61,7 +61,7 @@ class NormalPipeline(PipelineBase):
                         break  # user interception
             eval_results.append(self.eval(pred_results, gt_results))
             if self.verbose:
-                print "\nevaluate: %.4f" % eval_results[-1]
+                print "\nevaluate: %.4f" % eval_results[-1]  # FIXME
         return eval_results
 
     def eval(self, pred_results, gt_results):
