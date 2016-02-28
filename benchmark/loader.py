@@ -23,10 +23,10 @@ def get_length_by_token(token):
     raise NotImplementedError
 
 
-def get_instances():
-    gnrs = [ds.load_given_tokens() for ds in DATASETS]
+def get_instances(randomize=True):
+    gnrs = [ds.load_given_tokens(randomize=randomize) for ds in DATASETS]
     while len(gnrs) > 0:
-        gnr_idx = random.randint(0, len(gnrs) - 1)
+        gnr_idx = random.randint(0, len(gnrs) - 1) if randomize else 0
         try:
             gnr = gnrs[gnr_idx]
             yield gnr.next()
