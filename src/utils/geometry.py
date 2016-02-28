@@ -4,6 +4,7 @@
 # Purpose: tools for drawing
 # Mail: hewr2010@gmail.com
 import cv2
+import numpy as np
 
 
 def ensure_relative_coordinates(coords, shape):
@@ -27,9 +28,8 @@ def ensure_absolute_coordinates(coords, shape):
 def draw_polygon(img, coords,
                  color=(0, 0, 255), thickness=1):
     coords = ensure_absolute_coordinates(coords, img.shape[:2])
-    for i in xrange(len(coords)):
-        p, q = coords[i], coords[(i + 1) % len(coords)]
-        cv2.line(img, p, q, color, thickness)
+    cv2.polylines(img, np.array([coords], 'int64'), True, color, thickness)
+
 
 def fit_image_in_box(img, screen):
     """scale in proportion to fit in screen
