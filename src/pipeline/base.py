@@ -11,13 +11,15 @@ from ..benchmark import get_instances, get_length_by_token
 from ..utils import draw_polygon, fit_image_in_box, get_overlap_area,\
     get_rectangular_area
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class PipelineBase(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, tracker_constructor, verbose=False):
+    def __init__(self, tracker_constructor):
         self.tracker_constructor = tracker_constructor
-        self.verbose = verbose
 
     @abstractmethod
     def run(self, data_provider=None, display_screen=(600, 800)):
@@ -39,11 +41,10 @@ class NormalPipeline(PipelineBase):
             data_provider = get_instances()
         eval_results = []
         for token, data_stream in get_instances():
-            if self.verbose:
-                print token
+            logger.info(token)
             instance_length = get_length_by_token(token)
-            pbar = self.get_progressbar(instance_length) if self.verbose else\
-                lambda x: x
+            pbar = self.get_progressbar(instance_length) \
+                if logger.level <= logging.INFO else lambda x: x
             pred_results, gt_results = [], []
             for idx, (img, gt_coords) in pbar(enumerate(data_stream)):
                 if display_screen is not None:
@@ -60,8 +61,6 @@ class NormalPipeline(PipelineBase):
                     ):
                         break  # user interception
             eval_results.append(self.eval(pred_results, gt_results))
-            if self.verbose:
-                print "\nevaluate: %.4f" % eval_results[-1]  # FIXME
         return eval_results
 
     def eval(self, pred_results, gt_results):
@@ -75,10 +74,11 @@ class NormalPipeline(PipelineBase):
         Y = np.array([sum([
             int(area >= threshold) for area in normalized_areas
         ]) / float(len(normalized_areas)) for threshold in X])
-        import matplotlib.pyplot as plt
-        plt.plot(X, Y)
-        plt.show()
-        return Y  # TODO
+        if logger.level <= logging.DEBUG:
+            import matplotlib.pyplot as plt
+            plt.plot(X, Y)
+            plt.show()
+        return Y
 
     def get_progressbar(self, maxval):
         widgets = [progressbar.Percentage(), " ", progressbar.Bar(), " ",
@@ -87,6 +87,8 @@ class NormalPipeline(PipelineBase):
         return pbar
 
     def plot_stats(self, img, pred_coords, gt_coords, tracker):
+        if logger.level > logging.DEBUG:  # skip plotting
+            return True
         # plot particles distribution
         board = (np.zeros(img.shape) + 255).astype('uint8')
         for particle in sorted(
@@ -104,15 +106,11 @@ class NormalPipeline(PipelineBase):
         #draw_polygon(img, particle.coords, color=(0, 255, 255))
         draw_polygon(img, gt_coords, color=(0, 255, 0))
         draw_polygon(img, pred_coords, color=(0, 0, 255))
-        if self.verbose:
-            cv2.imshow('particles', board)
-            cv2.imshow('img', img)
-            #if idx == 1:
-                #cv2.moveWindow("img", 0, 0)
-                #cv2.moveWindow("particles", img.shape[1], 0)
-            keyboard = chr(cv2.waitKey(0) & 0xFF)
-            if keyboard == 'q':
-                exit()
-            elif keyboard == 's':  # skip token
-                return False
+        cv2.imshow('particles', board)
+        cv2.imshow('img', img)
+        keyboard = chr(cv2.waitKey(0) & 0xFF)
+        if keyboard == 'q':
+            exit()
+        elif keyboard == 's':  # skip token
+            return False
         return True

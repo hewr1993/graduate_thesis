@@ -83,7 +83,7 @@ class Particle(object):
         try:
             return cv2.resize(patch_img, self._patch_shape[::-1])
         except:
-            from IPython import embed; embed()
+            #from IPython import embed; embed()
             exit()
 
 
