@@ -1,9 +1,6 @@
-data/websocket/records/*.log
-backtest/materials/
 .DS_Store
 *.pyc
 *.swp
 *.swo
 *~
 *.log
-crawler/records/*.log
