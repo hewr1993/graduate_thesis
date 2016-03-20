@@ -14,7 +14,7 @@ def get_images_directory(token):
 
 
 def get_tokens():
-    return glob.glob(os.path.join(BASE_DIR, "*/groundtruth.txt"))
+    return glob.glob(os.path.join(BASE_DIR, "VOT2014/*/groundtruth.txt"))
 
 
 def has_token(token):
