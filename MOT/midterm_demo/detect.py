@@ -9,7 +9,7 @@ import numpy as np
 
 
 def parse_paths(paths):
-    paths = [path for path in args.image_expr if path[-12:-4] != "_heatmap"]
+    paths = [path for path in paths if path[-12:-4] != "_heatmap"]
     paths.sort(key=lambda s: (os.path.dirname(s), int(os.path.splitext(os.path.basename(s))[0])))
     paths = [(path, path[:-4] + "_heatmap" + path[-4:]) for path in paths]
     return paths
