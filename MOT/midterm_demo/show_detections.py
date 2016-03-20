@@ -7,13 +7,6 @@ import cv2
 import glob
 import numpy as np
 
-import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument(dest="image_expr", nargs="+")
-parser.add_argument("--max_height", type=int, default=540)
-parser.add_argument("--max_width", type=int, default=960)
-args = parser.parse_args()
-
 
 def parse_paths(paths):
     paths = [path for path in args.image_expr if path[-12:-4] != "_heatmap"]
@@ -59,6 +52,13 @@ def get_detections(heatmap):
     return boxes
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument(dest="image_expr", nargs="+")
+    parser.add_argument("--max_height", type=int, default=540)
+    parser.add_argument("--max_width", type=int, default=960)
+    args = parser.parse_args()
+
     paths = parse_paths(args.image_expr)
     for origin_path, heatmap_path in paths:
         print origin_path
