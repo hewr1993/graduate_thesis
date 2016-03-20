@@ -187,7 +187,7 @@ if __name__ == "__main__":
     parser.add_argument(dest="image_expr", nargs="+")
     parser.add_argument("--max_height", type=int, default=540)
     parser.add_argument("--max_width", type=int, default=960)
-    parser.add_argument("--max_absence", type=int, default=2)
+    parser.add_argument("--max_absence", type=int, default=5)
     parser.add_argument("--min_hits", type=int, default=3)
     parser.add_argument("--iou_threshold", type=float, default=0.3)
     parser.add_argument("--delay", type=int, default=0)
