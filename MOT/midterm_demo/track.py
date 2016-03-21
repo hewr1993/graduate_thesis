@@ -113,7 +113,8 @@ class Tracker(object):
 
 
 class Monitor(object):
-    def __init__(self, tracker_constructor, IOU_THRESHOLD=0.3):
+    def __init__(self, tracker_constructor,
+                 DETECT_THRESHOLD=0.3, IOU_THRESHOLD=0.3):
         """
         @param tracker_constructor: used to create new tracker \
             tracker_constructor(birth, det)
@@ -121,6 +122,7 @@ class Monitor(object):
         """
         self.age = 0  # how many passed frames
         self.tracker_constructor = tracker_constructor
+        self.DETECT_THRESHOLD = DETECT_THRESHOLD
         self.IOU_THRESHOLD = IOU_THRESHOLD
         self.trackers = []  # tracked objects
 
@@ -161,6 +163,10 @@ class Monitor(object):
         # calculate heatmap
         # FIXME assume it's heatmap of detections
         heatmap = frame
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+        heatmap = cv2.dilate(heatmap, kernel)
+        heatmap = cv2.erode(heatmap, kernel)
+        heatmap[heatmap <= self.DETECT_THRESHOLD] = 0
         # calculate detections (x, y, w, h)
         dets = get_detections(heatmap)
         dets = [bbox for bbox, _, _ in dets]
@@ -189,6 +195,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_width", type=int, default=960)
     parser.add_argument("--max_absence", type=int, default=5)
     parser.add_argument("--min_hits", type=int, default=3)
+    parser.add_argument("--detect_threshold", type=float, default=0)
     parser.add_argument("--iou_threshold", type=float, default=0.3)
     parser.add_argument("--delay", type=int, default=0)
     parser.add_argument("--verbose", action="store_true")
@@ -200,7 +207,9 @@ if __name__ == "__main__":
         MAX_ABSENCE=args.max_absence,
         MIN_HITS=args.min_hits,
     )
-    monitor = Monitor(tracker_constructor, IOU_THRESHOLD=args.iou_threshold)
+    monitor = Monitor(tracker_constructor,
+                      DETECT_THRESHOLD=args.detect_threshold,
+                      IOU_THRESHOLD=args.iou_threshold)
     colors = []
     # main process
     paths = parse_paths(args.image_expr)
