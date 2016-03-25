@@ -2,6 +2,7 @@
 # -*- coding:utf-8 -*-
 # Created Time: Sun Mar 20 18:44:42 2016
 # Mail: hewr2010@gmail.com
+import os
 import sys
 import cv2
 import math
@@ -197,8 +198,12 @@ if __name__ == "__main__":
     parser.add_argument("--min_hits", type=int, default=3)
     parser.add_argument("--detect_threshold", type=float, default=0)
     parser.add_argument("--iou_threshold", type=float, default=0.3)
+    parser.add_argument("--start_frame", type=int, default=0)
+    parser.add_argument("--end_frame", type=int, default=1e8)
+    parser.add_argument("--save_gif", type=str, default="")
     parser.add_argument("--delay", type=int, default=0)
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--fast_mode", action="store_true", help="no display")
     args = parser.parse_args()
 
     # initialize
@@ -212,9 +217,12 @@ if __name__ == "__main__":
                       IOU_THRESHOLD=args.iou_threshold)
     colors = []
     # main process
-    paths = parse_paths(args.image_expr)
+    gif_items = []
+    paths = parse_paths(args.image_expr)[args.start_frame:args.end_frame + 1]
     for frame_cnt, (origin_path, heatmap_path) in \
             get_progressbar(len(paths))(enumerate(paths)):
+        if len(args.save_gif) > 0:
+            gif_item = []
         # heatmap related
         ori_img = get_in_box(cv2.imread(origin_path), (args.max_height, args.max_width))
         heatmap = get_in_box(cv2.imread(heatmap_path), (args.max_height, args.max_width))
@@ -227,7 +235,10 @@ if __name__ == "__main__":
                 cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 1)
                 cv2.drawContours(img, np.array([cv2.cv.BoxPoints(bbox)], 'int64'), 0, (0, 0, 255), 1)
                 cv2.polylines(img, np.array([approx], 'int64'), True, (255, 0, 0), 1)
-            cv2.imshow("information", img)
+            if not args.fast_mode:
+                cv2.imshow("information", img)
+            if len(args.save_gif) > 0:
+                gif_item.append(img.copy())
         img = ori_img.copy()
         for x, y, w, h, _id in tracking_results:
             # prepare color
@@ -235,6 +246,19 @@ if __name__ == "__main__":
                 colors.append(tuple(np.random.randint(0, 255, 3)))
             cv2.rectangle(img, (x, y), (x + w, y + h), colors[_id - 1], 2)
             cv2.putText(img, str(_id), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.8, 255)
-        cv2.imshow('result', img)
-        if chr(cv2.waitKey(args.delay) & 0xFF) == 'q':
-            exit()
+        if len(args.save_gif) > 0:
+            gif_item.append(img.copy())
+            gif_items.append(gif_item)
+        if not args.fast_mode:
+            cv2.imshow('result', img)
+            if chr(cv2.waitKey(args.delay) & 0xFF) == 'q':
+                exit()
+    if len(args.save_gif) > 0:
+        imgs = []
+        for item in gif_items:
+            merge_img = np.zeros((item[0].shape[0], item[0].shape[1] * len(item), 3), "uint8")
+            for i, img in enumerate(item):
+                merge_img[:, i * item[0].shape[1]:(i + 1) * item[0].shape[1]] = img[:, :, ::-1]
+            imgs.append(merge_img)
+        import images2gif
+        images2gif.writeGif(args.save_gif, imgs, duration=0.01)
