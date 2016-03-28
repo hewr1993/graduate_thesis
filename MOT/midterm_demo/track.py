@@ -199,11 +199,12 @@ if __name__ == "__main__":
     parser.add_argument("--detect_threshold", type=float, default=0)
     parser.add_argument("--iou_threshold", type=float, default=0.3)
     parser.add_argument("--start_frame", type=int, default=0)
-    parser.add_argument("--end_frame", type=int, default=1e8)
+    parser.add_argument("--end_frame", type=int, default=int(1e8))
     parser.add_argument("--save_gif", type=str, default="")
     parser.add_argument("--delay", type=int, default=0)
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--fast_mode", action="store_true", help="no display")
+    parser.add_argument("--encrypt", action="store_true", help="blur sensitive areas")
     args = parser.parse_args()
 
     # initialize
@@ -240,6 +241,17 @@ if __name__ == "__main__":
             if len(args.save_gif) > 0:
                 gif_item.append(img.copy())
         img = ori_img.copy()
+        if args.encrypt:
+            # blur img
+            blur = ori_img.copy()
+            for _ in xrange(20):
+                blur = cv2.GaussianBlur(blur, (15, 15), 1.5)
+            mask = np.zeros(heatmap.shape, 'uint8')
+            for (x, y, w, h), bbox, approx in get_detections(heatmap):
+                pts = np.array([(int(x), int(y)) for x, y in cv2.cv.BoxPoints(bbox)])
+                cv2.fillConvexPoly(mask, pts, (255, 255, 255))
+            w = mask.astype("float32") / 255.
+            img = (blur * w + ori_img * (1 - w)).astype("uint8")
         for x, y, w, h, _id in tracking_results:
             # prepare color
             while len(colors) < _id:
